@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: CodeSupplierService
+  config:
+    import: optional:configserver:http://localhost:8989/
+
+css:
+  localCodeDir: ../../../../rawtestcode
+  cds:
+    src: ${css.localCodeDir}/CDS.java
+  ss:
+    src: ${css.localCodeDir}/SS.java
+  rs:
+    src: ${css.localCodeDir}/RS.java

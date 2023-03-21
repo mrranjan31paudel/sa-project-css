@@ -1,0 +1,23 @@
+spring:
+  profiles:
+    active: native
+  config:
+    import:
+
+server:
+  port: 8989
+
+#---
+#
+#spring:
+#  cloud:
+#    config:
+#      server:
+#        git:
+#          uri: https://github.com/mrranjan31paudel/SWA-MIU-LABS.git
+#          searchPaths:
+#            - lab10_part_3/*
+#  profiles:
+#    active: git
+#server:
+#  port: 8989
