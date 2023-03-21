@@ -1,3 +1,3 @@
 # Software Architecture Project - Code Supplier Service
-**Group**: A
+**Group**: A\
 **Service Name**: Code Supplier Service
