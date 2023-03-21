@@ -12,3 +12,10 @@ css:
     src: ${css.localCodeDir}/SS.java
   rs:
     src: ${css.localCodeDir}/RS.java
+
+  eureka:
+    client:
+      serviceUrl:
+        defaultZone:http://localhost:8761/eureka/
+
+
