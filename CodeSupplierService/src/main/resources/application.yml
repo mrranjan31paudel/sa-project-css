@@ -5,10 +5,14 @@ spring:
     import: optional:configserver:http://localhost:8989/
 
 css:
-  localCodeDir: ../../../../rawtestcode
   cds:
-    src: ${css.localCodeDir}/CDS.java
+    src: https://github.com/mrranjan31paudel/sa-project-css/archive/refs/heads/main.zip
   ss:
-    src: ${css.localCodeDir}/SS.java
+    src: vvv
   rs:
-    src: ${css.localCodeDir}/RS.java
+    src: vvv
+
+cssTempDir: ${HOME}/csstempdir
+zipDir: ${cssTempDir}/zips
+codeDir: ${cssTempDir}/codes
+zipOutDir: ${cssTempDir}/zipOut
