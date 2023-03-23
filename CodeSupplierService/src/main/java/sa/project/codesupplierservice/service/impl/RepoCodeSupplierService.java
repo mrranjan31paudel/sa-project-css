@@ -116,7 +116,7 @@ public class RepoCodeSupplierService implements ICodeSupplierService {
         String siOutputTopic = "SI_" + cds1TopicIndex + "_" + cds2TopicIndex;
         String nsiOutputTopic = "NSI_" + cds1TopicIndex + "_" + cds2TopicIndex;
         newPropertiesString = newPropertiesString.replace("$$sioutput$$", siOutputTopic);
-        newPropertiesString = newPropertiesString.replace("$$nsioutput$$", nsiOutputTopic);
+        newPropertiesString = newPropertiesString.replace("$$nioutput$$", nsiOutputTopic);
         writeContentToFile(applicationPropertiesFile, newPropertiesString);
     }
 
