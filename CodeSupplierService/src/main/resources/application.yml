@@ -7,7 +7,7 @@ spring:
 eureka:
   client:
     serviceUrl:
-      defaultZone:http://localhost:8761/eureka/
+      defaultZone: http://localhost:8761/eureka/
 css:
   cds:
     src: https://github.com/kuylim/sa-cds/archive/refs/heads/main.zip
