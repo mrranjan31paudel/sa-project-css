@@ -1,14 +1,22 @@
 package sa.project.codesupplierservice;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import sa.project.codesupplierservice.service.ICodeSupplierService;
 
-import java.util.Arrays;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 
 @RestController
 @RequiredArgsConstructor
@@ -17,36 +25,32 @@ public class CodeSupplierController {
     private final ICodeSupplierService codeSupplierService;
 
     /**
-     * Endpoint: Change Detector Service
-     * GET /cds?topic=topicName
-     * @param topic
-     * @return
-     */
-    @GetMapping("/cds")
-    public ResponseEntity<String> getCDSCode(@RequestParam String topic) {
-        return new ResponseEntity<>(codeSupplierService.getCDSCode(topic), HttpStatus.OK);
-    }
-
-    /**
-     * Endpoint: Scoring Service
-     * GET /ss?topic1=t1&topic2=t2
-     * @param topic1
-     * @param topic2
-     * @return
-     */
-    @GetMapping("/ss")
-    public ResponseEntity<String> getSSCode(@RequestParam String topic1, @RequestParam String topic2) {
-        return new ResponseEntity<>(codeSupplierService.getSSCode(topic1, topic2), HttpStatus.OK);
-    }
-
-    /**
-     * Endpoint: Reporting Service
-     * GET /rs?topics=t1,t2
+     * Example:
+     * Change Detector Service: GET /codes?service-name=cds&topics=t1
+     * Scoring Service: GET /codes?service-name=ss&topics=t1,t2
+     * Reporting Service: GET /codes?service-name=rs&topics=t1,t2,t3,t4
+     * @param serviceName
      * @param topics
      * @return
      */
-    @GetMapping("/rs")
-    public ResponseEntity<String> getRSCode(@RequestParam String topics) {
-        return new ResponseEntity<>(codeSupplierService.getRSCode(topics), HttpStatus.OK);
+    @GetMapping("/codes")
+    public ResponseEntity<Resource> getCode(@RequestParam("service-name") String serviceName, @RequestParam String topics, HttpServletResponse response) {
+        try {
+            File zipFile = codeSupplierService.getCode(serviceName, topics, response.getOutputStream());
+            InputStreamResource resource = new InputStreamResource(new FileInputStream(zipFile));
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Content-Disposition", "attachment;filename="+serviceName+".zip");
+
+            return ResponseEntity
+                    .ok()
+                    .headers(headers)
+                    .contentLength(zipFile.length())
+                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                    .body(resource);
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 }

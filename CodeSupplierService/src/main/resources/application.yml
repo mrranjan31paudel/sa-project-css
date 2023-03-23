@@ -5,10 +5,17 @@ spring:
     import: optional:configserver:http://localhost:8989/
 
 css:
-  localCodeDir: ../../../../rawtestcode
   cds:
-    src: ${css.localCodeDir}/CDS.java
+    src: https://github.com/kuylim/sa-cds/archive/refs/heads/main.zip
+    projectName: sa-cds-main #reponame-branchname
   ss:
-    src: ${css.localCodeDir}/SS.java
+    src: https://github.com/gedyeyasu/spring-kafka-streams/archive/refs/heads/main.zip
+    projectName: spring-kafka-streams-main
   rs:
-    src: ${css.localCodeDir}/RS.java
+    src: na #rs service does not need code generation service
+    projectName: na
+
+cssTempDir: ${HOME}/csstempdir
+zipDir: ${cssTempDir}/zips
+codeDir: ${cssTempDir}/codes
+zipOutDir: ${cssTempDir}/zipOut
