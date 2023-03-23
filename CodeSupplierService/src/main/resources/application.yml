@@ -13,8 +13,8 @@ css:
     src: https://github.com/kuylim/sa-cds/archive/refs/heads/main.zip
     projectName: sa-cds-main #reponame-branchname
   ss:
-    src: https://github.com/gedyeyasu/spring-kafka-streams/archive/refs/heads/main.zip
-    projectName: spring-kafka-streams-main
+    src: https://github.com/aetana/SharedSS/archive/refs/heads/main.zip
+    projectName: SharedSS-main
   rs:
     src: na #rs service does not need code generation service
     projectName: na
@@ -29,9 +29,9 @@ logging:
     root: INFO
     org:
       springframework:
-        web: DEBUG
-  file:
-    name: ${LOG_PATH:-./logs}/app.log
+        web: ERROR
+#  file:
+#    name: ${LOG_PATH:-./logs}/app.log
   pattern:
     console: '%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n'
     file: '%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n'
