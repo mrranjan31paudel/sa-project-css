@@ -107,7 +107,8 @@ public class RepoCodeSupplierService implements ICodeSupplierService {
     public void getSSCode(String topic1, String topic2, File workDir) throws IOException {
         File applicationPropertiesFile = getApplicationPropertiesFile(workDir, ssProjectName);
         String propertiesString = getStringFromFile(applicationPropertiesFile);
-        String newPropertiesString = propertiesString.replace("$$input$$", topic1+","+topic2);
+        String newPropertiesString = propertiesString.replace("$$inputX$$", topic1);
+        newPropertiesString = newPropertiesString.replace("$$inputY$$", topic2);
         String[] topicParts1 = topic1.split("_");
         String[] topicParts2 = topic2.split("_");
         int cds1TopicIndex = Integer.parseInt(topicParts1[topicParts1.length - 1]);
@@ -124,12 +125,35 @@ public class RepoCodeSupplierService implements ICodeSupplierService {
         throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Service not available for Reporting Service!");
     }
 
-    @Override
-    public File getCode(String serviceName, String topics, ServletOutputStream servletOutputStream) throws IOException {
+    private void validateServiceName(String serviceName) {
         if (!serviceName.matches("^(cds)|(ss)|(rs)$"))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Allowed service names: cds, ss, rs!");
+    }
 
+    private void validateTopics(String[] topics) {
+        boolean isValid = true;
+        if (topics.length == 0) {
+            isValid = false;
+        }
+        else {
+            for (String topic : topics) {
+                if (!topic.matches("^(DS_\\d+)|(CDS_\\d+)|(SI_\\d+_\\d+)|(NSI_\\d+_\\d+)$")) {
+                    isValid = false;
+                    break;
+                }
+            }
+        }
+
+        if (!isValid) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid Topics!");
+        }
+    }
+
+    @Override
+    public File getCode(String serviceName, String topics, ServletOutputStream servletOutputStream) throws IOException {
+        validateServiceName(serviceName);
         String[] topicArr = topics.split(" *, *");
+        validateTopics(topicArr);
         long currentTimeStamp = System.currentTimeMillis();
         String zipSrc = zipDir + "/" + serviceName + "_" + currentTimeStamp + ".zip";
         String extractSrc = codeDir + "/" + serviceName + "_" + currentTimeStamp;
