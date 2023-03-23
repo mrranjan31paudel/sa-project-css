@@ -34,9 +34,9 @@ public class CodeSupplierController {
      * @return
      */
     @GetMapping("/codes")
-    public ResponseEntity<Resource> getCode(@RequestParam("service-name") String serviceName, @RequestParam String topics, HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<Resource> getCode(@RequestParam("service-name") String serviceName, @RequestParam String topics, HttpServletResponse response) {
         try {
-            File zipFile = codeSupplierService.getCode(serviceName, topics);
+            File zipFile = codeSupplierService.getCode(serviceName, topics, response.getOutputStream());
             InputStreamResource resource = new InputStreamResource(new FileInputStream(zipFile));
             HttpHeaders headers = new HttpHeaders();
             headers.set("Content-Disposition", "attachment;filename="+serviceName+".zip");

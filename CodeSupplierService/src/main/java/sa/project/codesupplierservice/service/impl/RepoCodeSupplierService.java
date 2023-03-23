@@ -7,26 +7,19 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import sa.project.codesupplierservice.service.ICodeSupplierService;
-import sa.project.codesupplierservice.utils.ICodeReadWrite;
 import sa.project.codesupplierservice.utils.IZipper;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import javax.servlet.ServletOutputStream;
+import java.io.*;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 
 @Service
 @RequiredArgsConstructor
 public class RepoCodeSupplierService implements ICodeSupplierService {
 
-    private final ICodeReadWrite codeReadWrite;
     private final IZipper zipper;
-
-    private long currentTimeStamp;
 
     @Value("${css.cds.src}")
     private String cdsSrc;
@@ -46,6 +39,15 @@ public class RepoCodeSupplierService implements ICodeSupplierService {
     @Value("${zipOutDir}")
     private String zipOutDir;
 
+    @Value("${css.cds.projectName}")
+    private String cdsProjectName;
+
+    @Value("${css.ss.projectName}")
+    private String ssProjectName;
+
+    private final static String APPLICATION_YML_REL_PATH = "/src/main/resources/application.yml";
+    private final static int FILE_READ_CHAR_BUFFER_SIZE = 10;
+
     private void downloadZip(String serviceName, String dest) throws IOException {
         String srcUrl = "";
         if (serviceName.equals("cds"))
@@ -61,55 +63,77 @@ public class RepoCodeSupplierService implements ICodeSupplierService {
         }
     }
 
+    private File getApplicationPropertiesFile(File workDir, String projectName) {
+        System.out.println(workDir.getAbsolutePath());
+        File applicationProperties = new File(workDir.getAbsolutePath() + "/" + projectName + APPLICATION_YML_REL_PATH);
+        if (!applicationProperties.exists()) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Properties file not found!");
+        }
+        return applicationProperties;
+    }
+
+    private String getStringFromFile(File file) throws IOException {
+        try(BufferedReader reader = new BufferedReader(new FileReader(file));) {
+            StringBuilder stringBuilder = new StringBuilder();
+            char[] charArrBuffer = new char[FILE_READ_CHAR_BUFFER_SIZE];
+            while (reader.read(charArrBuffer) != -1) {
+                stringBuilder.append(new String(charArrBuffer));
+                charArrBuffer = new char[FILE_READ_CHAR_BUFFER_SIZE];
+            }
+            return stringBuilder.toString();
+        }
+    }
+
+    private void writeContentToFile(File file, String content) throws IOException {
+        String refinedContent = content.replace('\0', ' '); // Bypass the null character
+        try(FileWriter fw = new FileWriter(file);BufferedWriter writer = new BufferedWriter(fw);) {
+            writer.write(refinedContent);
+        }
+    }
+
     @Override
     public void getCDSCode(String topic, File workDir) throws IOException {
-        // code regeneration in file // Remaining
+        File applicationPropertiesFile = getApplicationPropertiesFile(workDir, cdsProjectName);
+        String propertiesString = getStringFromFile(applicationPropertiesFile);
+        String newPropertiesString = propertiesString.replace("$$input$$", topic);
+        String[] topicParts = topic.split("_");
+        int dsTopicIndex = Integer.parseInt(topicParts[topicParts.length - 1]);
+        String outputTopic = "CDS_" + dsTopicIndex;
+        newPropertiesString = newPropertiesString.replace("$$output$$", outputTopic);
+        writeContentToFile(applicationPropertiesFile, newPropertiesString);
     }
 
     @Override
     public void getSSCode(String topic1, String topic2, File workDir) throws IOException {
-//        try {
-//            String code = codeReadWrite.readFromSource(ssSrc);
-//            String newCode = code.replace("$$topic1$$", topic1);
-//            newCode = newCode.replace("$$topic2$$", topic2);
-//            return newCode;
-//        }
-//        catch (IOException e) {
-//            e.printStackTrace();
-//            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Error!");
-//        }
+        File applicationPropertiesFile = getApplicationPropertiesFile(workDir, ssProjectName);
+        String propertiesString = getStringFromFile(applicationPropertiesFile);
+        String newPropertiesString = propertiesString.replace("$$input$$", topic1+","+topic2);
+        String[] topicParts1 = topic1.split("_");
+        String[] topicParts2 = topic2.split("_");
+        int cds1TopicIndex = Integer.parseInt(topicParts1[topicParts1.length - 1]);
+        int cds2TopicIndex = Integer.parseInt(topicParts2[topicParts2.length - 1]);
+        String siOutputTopic = "SI_" + cds1TopicIndex + "_" + cds2TopicIndex;
+        String nsiOutputTopic = "NSI_" + cds1TopicIndex + "_" + cds2TopicIndex;
+        newPropertiesString = newPropertiesString.replace("$$sioutput$$", siOutputTopic);
+        newPropertiesString = newPropertiesString.replace("$$nsioutput$$", nsiOutputTopic);
+        writeContentToFile(applicationPropertiesFile, newPropertiesString);
     }
 
     @Override
     public void getRSCode(String topics, File workDir) throws IOException {
-//        try {
-//            String code = codeReadWrite.readFromSource(rsSrc);
-//            String[] topicArr = topics.split(" *, *");
-//
-//            StringBuilder sb = new StringBuilder("\"");
-//            for (int i = 0; i < topicArr.length - 1; i++) {
-//                sb.append(topicArr[i]).append("\",\"");
-//            }
-//            sb.append(topicArr[topicArr.length - 1]).append("\"");
-//
-//            return code.replace("\"$$topics$$\"", sb.toString());
-//        }
-//        catch (IOException e) {
-//            e.printStackTrace();
-//            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Error!");
-//        }
+        throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Service not available for Reporting Service!");
     }
 
     @Override
-    public File getCode(String serviceName, String topics) throws IOException {
+    public File getCode(String serviceName, String topics, ServletOutputStream servletOutputStream) throws IOException {
         if (!serviceName.matches("^(cds)|(ss)|(rs)$"))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Allowed service names: cds, ss, rs!");
 
         String[] topicArr = topics.split(" *, *");
-        currentTimeStamp = getCurrentTimeStamp();
+        long currentTimeStamp = System.currentTimeMillis();
         String zipSrc = zipDir + "/" + serviceName + "_" + currentTimeStamp + ".zip";
         String extractSrc = codeDir + "/" + serviceName + "_" + currentTimeStamp;
-        String exportSrc = zipOutDir + "/" + serviceName + "_" + currentTimeStamp;
+        String exportSrc = zipOutDir + "/" + serviceName + "_" + currentTimeStamp + ".zip";
         File extractDir = new File(extractSrc);
         if (!extractDir.mkdir())
             throw new IOException("Failed to create directory: " + extractDir);
@@ -127,11 +151,5 @@ public class RepoCodeSupplierService implements ICodeSupplierService {
         zipper.zipDir(filesInExtractDir[0].getAbsolutePath(), exportSrc);
 
         return new File(exportSrc);
-    }
-
-    private long getCurrentTimeStamp() {
-        LocalDateTime dateTime = LocalDateTime.now();
-        ZoneId zoneId = ZoneId.systemDefault();
-        return dateTime.atZone(zoneId).toEpochSecond();
     }
 }

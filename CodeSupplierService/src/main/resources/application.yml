@@ -6,11 +6,14 @@ spring:
 
 css:
   cds:
-    src: https://github.com/mrranjan31paudel/sa-project-css/archive/refs/heads/main.zip
+    src: https://github.com/kuylim/sa-cds/archive/refs/heads/main.zip
+    projectName: sa-cds-main #reponame-branchname
   ss:
-    src: vvv
+    src: https://github.com/gedyeyasu/spring-kafka-streams/archive/refs/heads/main.zip
+    projectName: spring-kafka-streams-main
   rs:
-    src: vvv
+    src: na #rs service does not need code generation service
+    projectName: na
 
 cssTempDir: ${HOME}/csstempdir
 zipDir: ${cssTempDir}/zips
