@@ -4,14 +4,25 @@ spring:
   config:
     import: optional:configserver:http://localhost:8989/
 
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
 css:
-  localCodeDir: ../../../../rawtestcode
   cds:
-    src: ${css.localCodeDir}/CDS.java
+    src: https://github.com/kuylim/sa-cds/archive/refs/heads/main.zip
+    projectName: sa-cds-main #reponame-branchname
   ss:
-    src: ${css.localCodeDir}/SS.java
+    src: https://github.com/gedyeyasu/spring-kafka-streams/archive/refs/heads/main.zip
+    projectName: spring-kafka-streams-main
   rs:
-    src: ${css.localCodeDir}/RS.java
+    src: na #rs service does not need code generation service
+    projectName: na
+
+cssTempDir: ${HOME}/csstempdir
+zipDir: ${cssTempDir}/zips
+codeDir: ${cssTempDir}/codes
+zipOutDir: ${cssTempDir}/zipOut
 
 logging:
   level:
@@ -19,7 +30,8 @@ logging:
     org:
       springframework:
         web: DEBUG
-  file: ${LOG_PATH:-./logs}/app.log
+  file:
+    name: ${LOG_PATH:-./logs}/app.log
   pattern:
     console: '%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n'
     file: '%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n'
